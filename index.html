@@ -189,7 +189,7 @@
                         <a href="#" class="block p-4 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md hover:border-red-400 transition group">
                             <div class="flex items-center justify-between">
                                 <span class="font-bold text-gray-700 group-hover:text-red-600">🧬 Biología</span>
-                                <svg class="w-5 h-5 text-gray-400 group-hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                            <svg class="w-5 h-5 text-gray-400 group-hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                             </div>
                             <p class="text-xs text-gray-500 mt-2">Genética y Ecosistemas.</p>
                         </a>
@@ -517,8 +517,8 @@
          * LÓGICA DEL TUTOR VIRTUAL (GEMINI / NEOX)
          ****************************************************************/
         
-        // La clave de API de Gemini se espera que esté disponible a través de una variable de entorno en Canvas.
-        // La dejamos vacía aquí y Canvas la proporcionará en la llamada 'fetch'.
+        // CORRECCIÓN CLAVE: Si se despliega en un servidor propio, REEMPLAZA "" con tu clave de API de Gemini
+        // Si se ejecuta en este entorno (Canvas), déjalo como está.
         const geminiApiKey = ""; 
         const geminiModel = 'gemini-2.5-flash-preview-09-2025';
         const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${geminiApiKey}`;
@@ -606,7 +606,13 @@
                 if (text) {
                     outputDiv.textContent = text;
                 } else if (result.error) {
-                    outputDiv.innerHTML = `<h4 class="text-red-500 font-bold">❌ Error de Neox (API):</h4><p class="text-sm">Código: ${result.error.code}. Mensaje: ${result.error.message}</p>`;
+                    // Manejo específico del 403 con mensaje de ayuda para el usuario
+                    let errorMsg = result.error.message;
+                    if (result.error.code === 403) {
+                         errorMsg = `Error 403 (Prohibido): Tu clave API no es válida o no tiene permisos para usar el modelo '${geminiModel}'. **Asegúrate de haber pegado tu clave API personal en la variable 'geminiApiKey' del código si estás en un entorno propio.**`;
+                    }
+                    
+                    outputDiv.innerHTML = `<h4 class="text-red-500 font-bold">❌ Error de Neox (API):</h4><p class="text-sm">${errorMsg}</p>`;
                     console.error("Error completo de la API:", result.error);
                 } else {
                     outputDiv.innerHTML = `<h4 class="text-red-500 font-bold">❌ Error de Neox:</h4><p class="text-sm">No se pudo obtener la respuesta del modelo. Intenta de nuevo. (Revisa la consola para más detalles)</p>`;
@@ -626,16 +632,17 @@
         const handleRetroalimentacion = () => {
             const textoTaller = document.getElementById('textoTaller').value;
             const fileInput = document.getElementById('dropzone-file');
+            const outputDiv = document.getElementById('resultado');
             
             if (textoTaller.trim()) {
                 const prompt = `Hola Neox, por favor revisa el siguiente taller o examen que realicé y dame retroalimentación, correcciones y nota sugerida (de 1 a 5): \n\n ${textoTaller}`;
                 generarContenido(prompt);
             } else if (fileInput.files.length > 0) {
-                // Simulación para archivos (ya que requeriría backend/procesamiento complejo)
-                alert("La lectura directa de archivos está en desarrollo. Por favor, copia y pega el texto de tu taller en el cuadro de texto.");
+                // CORRECCIÓN: Usamos un mensaje en la interfaz en lugar de alert()
+                outputDiv.innerHTML = `<h4 class="text-yellow-600 font-bold">⚠️ Atención:</h4><p class="text-sm">La lectura directa de archivos está en desarrollo. Por favor, copia y pega el texto de tu taller en el cuadro de texto y usa el botón 'Enviar a Neox para Revisión'.</p>`;
+                document.querySelector('button[data-tab="tutor"]').click();
             } else {
                 // Usamos un modal o un mensaje dentro del DOM en lugar de alert()
-                const outputDiv = document.getElementById('resultado');
                 outputDiv.innerHTML = `<h4 class="text-yellow-600 font-bold">⚠️ Atención:</h4><p class="text-sm">Por favor, pega el texto de tu taller en el área de texto para que Neox pueda revisarlo.</p>`;
                 // Cambiamos a la pestaña del tutor para ver el mensaje
                 document.querySelector('button[data-tab="tutor"]').click();
