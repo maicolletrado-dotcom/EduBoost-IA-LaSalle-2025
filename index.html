@@ -23,6 +23,19 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+        /* Estilo para asegurar el texto en negrita dentro del output */
+        #resultado strong {
+            font-weight: 700;
+        }
+        #resultado ul {
+            list-style-type: disc;
+            margin-left: 1.5rem;
+            padding-left: 0.5rem;
+        }
+        /* Clase para mantener los saltos de línea y el formato enviado por la API */
+        .whitespace-pre-wrap {
+            white-space: pre-wrap;
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen font-sans">
@@ -134,7 +147,7 @@
                     <p class="text-sm">Recuerda decirme tu <strong>Curso/Grado</strong>, <strong>Área</strong>, <strong>Tema</strong> y <strong>Tiempo</strong> para crear el mejor plan para ti.</p>
                 </div>
 
-                <textarea id="entradaUsuario" placeholder="Escribe aquí... Ej: 'Hola Neox, estoy en grado 11, ayúdame con Química Orgánica por 1 hora...'" rows="6" class="border border-gray-300 focus:border-green-500 focus:ring-green-500 rounded-lg w-full p-4 mb-4 resize-none shadow-sm"></textarea>
+                <textarea id="entradaUsuario" placeholder='Escribe aquí... Ej: "Hola Neox, estoy en 3er semestre de Ingeniería. Quiero reforzar Física en el tema de Leyes de Newton por 2 horas."' rows="6" class="border border-gray-300 focus:border-green-500 focus:ring-green-500 rounded-lg w-full p-4 mb-4 resize-none shadow-sm"></textarea>
                 
                 <button id="btnGenerar" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 w-full mb-6 shadow-md flex justify-center items-center">
                     <span>Consultar a Neox</span>
@@ -145,8 +158,10 @@
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
                         Respuesta de Neox:
                     </h3>
-                    <div id="resultado" class="bg-gray-50 border border-gray-200 p-6 rounded-xl min-h-[200px] text-gray-700 custom-scrollbar overflow-y-auto shadow-inner leading-relaxed">
-                        <span class="text-gray-400 italic">Aquí aparecerá mi respuesta...</span>
+                    
+                    <!-- CAMBIO DE ESTILO AQUÍ: Aplicando un diseño de burbuja limpio -->
+                    <div id="resultado" class="bg-blue-50 border border-blue-300 p-6 rounded-xl min-h-[200px] text-gray-800 custom-scrollbar overflow-y-auto shadow-lg leading-relaxed">
+                        <span class="text-gray-500 italic">Aquí aparecerá mi respuesta...</span>
                     </div>
                 </div>
             </section>
@@ -215,7 +230,7 @@
                             <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-white hover:bg-gray-50">
                                 <div class="flex flex-col items-center justify-center pt-5 pb-6">
                                     <svg class="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
                                     </svg>
                                     <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">Haz clic para subir</span> o arrastra el archivo</p>
                                     <p class="text-xs text-gray-500">PDF, PNG, JPG (Máx 5MB)</p>
@@ -293,10 +308,7 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, addDoc, onSnapshot, collection, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
-        // Importación de la librería de Gemini
-        // NOTA: Usaremos 'gemini-2.5-flash-preview-09-2025' con la API fetch nativa para el control total sobre la clave de API.
-        
-        // Variables Globales de Firebase (Proporcionadas por el entorno)
+        // Variables Globales de Firebase (Proporcionadas por el entorno Canvas)
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         
         let firebaseConfig = {};
@@ -517,13 +529,17 @@
          * LÓGICA DEL TUTOR VIRTUAL (GEMINI / NEOX)
          ****************************************************************/
         
-        // CORRECCIÓN CLAVE: Si se despliega en un servidor propio, REEMPLAZA "" con tu clave de API de Gemini
-        // Si se ejecuta en este entorno (Canvas), déjalo como está.
-        const geminiApiKey = "AIzaSyAIVND9ZC8jcqfPwto5iEHf0qnFqPLTG0I"; 
+        // 🚨🚨🚨 CONFIGURACIÓN CRÍTICA PARA USO LOCAL 🚨🚨🚨
+        // SI ESTÁS EJECUTANDO ESTE ARCHIVO DESDE TU PC (NO DENTRO DE CANVAS):
+        // DEBES OBTENER E INSERTAR TU CLAVE DE API PERSONAL DE GOOGLE AQUÍ.
+        // Si la dejas vacía, la API generará un error 403 (Forbidden) fuera del entorno Canvas.
+        const geminiApiKey = "AIzaSyAF4soEBO3iqFXyr6KJYOzZZ1GX5G1-mLE"; // <--- ¡¡¡ PEGA TU CLAVE PERSONAL AQUÍ !!!
+        // ---------------------------------------------------------------------
+        
         const geminiModel = 'gemini-2.5-flash-preview-09-2025';
         const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${geminiApiKey}`;
 
-        // Instrucción de sistema ACTUALIZADA
+        // Instrucción de sistema para guiar a Neox
         const systemInstruction = "Tu nombre es Neox, un tutor virtual experto y amigable de la plataforma EduBoost IA de la Universidad de La Salle. Tu objetivo es ayudar a estudiantes. Si el usuario te indica su CURSO/GRADO, ÁREA, TEMA y TIEMPO, debes generar un plan de refuerzo personalizado adaptado a ese nivel académico. Si suben un texto de un taller, califícalo y dales retroalimentación constructiva. Sé motivador y claro.";
 
         /**
@@ -541,7 +557,6 @@
                         return response;
                     }
                     
-                    // Si el error es 429 (Too Many Requests) o un error de servidor (5xx), reintentar
                     if (response.status === 429 || response.status >= 500) {
                         const delay = Math.pow(2, currentRetry) * 1000;
                         currentRetry++;
@@ -554,14 +569,13 @@
                     throw new Error(`Error HTTP: ${response.status}`);
                     
                 } catch (error) {
-                    // Reintentar si es un error de red
                     if (currentRetry < maxRetries && error.message.includes("Failed to fetch")) {
                         const delay = Math.pow(2, currentRetry) * 1000;
                         currentRetry++;
                         console.warn(`Intento ${currentRetry} fallido por error de red. Reintentando en ${delay}ms...`);
                         await new Promise(resolve => setTimeout(resolve, delay));
                     } else {
-                        throw error; // Falla definitiva
+                        throw error; 
                     }
                 }
             }
@@ -575,18 +589,32 @@
 
             if (promptOverride) {
                 entrada = promptOverride;
-                // Cambiamos a la pestaña del tutor para ver la respuesta si estamos en otra
                 document.querySelector('button[data-tab="tutor"]').click();
             } else {
                 entrada = document.getElementById('entradaUsuario').value;
             }
 
             if (!entrada.trim()) {
-                outputDiv.textContent = "Por favor, escribe tu solicitud para Neox.";
+                outputDiv.innerHTML = '<span class="text-gray-500 italic">Por favor, escribe tu solicitud para Neox.</span>';
                 return;
             }
+            
+            // VERIFICACIÓN CRÍTICA DE LA CLAVE API
+            if (geminiApiKey.trim() === "" || geminiApiKey.trim().length < 30) {
+                 outputDiv.innerHTML = `
+                    <h4 class="text-red-600 font-bold border-b pb-2 mb-2">❌ Error de Configuración: Clave API Inválida</h4>
+                    <p class="text-sm mb-3">Si estás ejecutando el archivo localmente (con Python server):</p>
+                    <ol class="list-decimal list-inside ml-4 text-sm space-y-1">
+                        <li>Asegúrate de haber pegado la <strong>clave API completa y correcta de Gemini</strong>.</li>
+                        <li>Verifica que la clave esté en la línea 402.</li>
+                    </ol>
+                    <p class="text-xs mt-3 text-gray-500">Este problema no ocurre en el entorno de Canvas porque la clave se inyecta automáticamente.</p>
+                 `;
+                 return;
+            }
 
-            outputDiv.innerHTML = '<div class="flex items-center space-x-2"><svg class="animate-spin h-5 w-5 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>Neox está pensando...</span></div>';
+
+            outputDiv.innerHTML = '<div class="flex items-center space-x-2 text-indigo-600"><svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>Neox está pensando...</span></div>';
 
             const payload = {
                 contents: [{ parts: [{ text: entrada }] }],
@@ -604,15 +632,34 @@
                 const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
 
                 if (text) {
-                    outputDiv.textContent = text;
+                    // MODIFICACIÓN CLAVE AQUÍ: Usamos innerHTML con un wrapper para preservar formato
+                    // Aseguramos que los saltos de línea se muestren correctamente
+                    const formattedText = text;
+                    outputDiv.innerHTML = `<div class="whitespace-pre-wrap">${formattedText}</div>`;
                 } else if (result.error) {
-                    // Manejo específico del 403 con mensaje de ayuda para el usuario
                     let errorMsg = result.error.message;
+                    
                     if (result.error.code === 403) {
-                         errorMsg = `Error 403 (Prohibido): Tu clave API no es válida o no tiene permisos para usar el modelo '${geminiModel}'. **Asegúrate de haber pegado tu clave API personal en la variable 'geminiApiKey' del código si estás en un entorno propio.**`;
+                         errorMsg = `
+                            <h4 class="text-red-600 font-bold border-b pb-2 mb-2">❌ ERROR CRÍTICO 403 (Prohibido)</h4>
+                            <p class="text-sm font-bold">Esto significa que tu clave API fue rechazada. Debes verificar lo siguiente en tu consola de Google AI Studio / Cloud:</p>
+                            <ol class="list-decimal list-inside ml-4 text-sm space-y-2 mt-2">
+                                <li><strong>Verificación de Servicio:</strong> Asegúrate de que la clave que estás usando sea para el servicio **Generative Language API** (Gemini) y que este servicio esté **habilitado** en tu proyecto.</li>
+                                <li><strong>Restricciones de Referer:</strong> Si tu clave tiene restricciones de navegador, debes añadir a la lista de "Referers" permitidos las siguientes direcciones, que son las que usa el servidor de Python:
+                                    <ul class="list-disc list-inside ml-4 mt-1 font-mono text-xs text-gray-700 p-2 bg-gray-200 rounded">
+                                        <li><code>http://localhost:*</code></li>
+                                        <li><code>http://127.0.0.1:*</code></li>
+                                    </ul>
+                                </li>
+                                <li><strong>Doble Chequeo:</strong> Asegúrate de que la clave que pegaste en la línea 402 no tenga espacios en blanco ni caracteres extraños.</li>
+                            </ol>
+                            <p class="text-xs mt-3 text-gray-500">Error original: ${errorMsg}</p>
+                         `;
+                    } else {
+                        errorMsg = `<h4 class="text-red-600 font-bold border-b pb-2 mb-2">❌ Error de Neox (API):</h4><p class="text-sm">${errorMsg}</p>`;
                     }
                     
-                    outputDiv.innerHTML = `<h4 class="text-red-500 font-bold">❌ Error de Neox (API):</h4><p class="text-sm">${errorMsg}</p>`;
+                    outputDiv.innerHTML = errorMsg;
                     console.error("Error completo de la API:", result.error);
                 } else {
                     outputDiv.innerHTML = `<h4 class="text-red-500 font-bold">❌ Error de Neox:</h4><p class="text-sm">No se pudo obtener la respuesta del modelo. Intenta de nuevo. (Revisa la consola para más detalles)</p>`;
@@ -638,7 +685,7 @@
                 const prompt = `Hola Neox, por favor revisa el siguiente taller o examen que realicé y dame retroalimentación, correcciones y nota sugerida (de 1 a 5): \n\n ${textoTaller}`;
                 generarContenido(prompt);
             } else if (fileInput.files.length > 0) {
-                // CORRECCIÓN: Usamos un mensaje en la interfaz en lugar de alert()
+                // Usamos un mensaje en la interfaz en lugar de alert()
                 outputDiv.innerHTML = `<h4 class="text-yellow-600 font-bold">⚠️ Atención:</h4><p class="text-sm">La lectura directa de archivos está en desarrollo. Por favor, copia y pega el texto de tu taller en el cuadro de texto y usa el botón 'Enviar a Neox para Revisión'.</p>`;
                 document.querySelector('button[data-tab="tutor"]').click();
             } else {
